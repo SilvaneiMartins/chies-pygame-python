@@ -4,12 +4,13 @@ import pygame
 pygame.init()
 
 # variáveis globais
-WIDTH = 1000
+WIDTH = 1200
 HEIGHT = 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Jogo de Xadrez - Silvanei Martins")
 font = pygame.font.Font("poppins-bold.ttf", 20)
 big_font = pygame.font.Font("poppins-bold.ttf", 40)
+small_font = pygame.font.Font("poppins-bold.ttf", 16)
 timer = pygame.time.Clock()
 fps = 60
 
@@ -98,21 +99,139 @@ def draw_board():
 
         # desenha os quadrados do tabuleiro
         if row % 2 == 0:
-          pygame.draw.rect(screen, "light gray", [600 - (column * 200), row * 100, 100, 100])
+            pygame.draw.rect(screen, "light gray", [600 - (column * 200), row * 100, 100, 100])
         else:
-          pygame.draw.rect(screen, "light gray", [700 - (column * 200), row * 100, 100, 100])
+            pygame.draw.rect(screen, "light gray", [700 - (column * 200), row * 100, 100, 100])
+        pygame.draw.rect(screen, "gray", [800, 600, 400, 200])
+        pygame.draw.rect(screen, "dark gray", [800, 600, 400, 200])
+        pygame.draw.rect(screen, "gray", [800, 0, 400, 600])
 
-# game loop
+        # lista de texto do status
+        status_text = [
+            "Branco - Selecione uma peça para mover!",
+            "Branco - Selecione um destino!",
+            "Preto - Selecione uma peça para mover!",
+            "Preto - Selecione um destino!"
+        ]
+
+        # desenha o texto do status
+        screen.blit(small_font.render(status_text[turn_step], True, "#202021"), (810, 610))
+        for i in range(9):
+            pygame.draw.line(screen, "black", (100 * i, 0), (100 * i, 800))
+            pygame.draw.line(screen, "black", (0, 100 * i), (800, 100 * i))
+
+# função para desenhar as peças no tabuleiro
+def draw_pieces():
+    for i in range(len(white_pieces)):
+        index = piece_list.index(white_pieces[i])
+        if white_pieces[i] == 'pawn':
+            screen.blit(white_pawn, (white_locations[i][0] * 100 + 22, white_locations[i][1] * 100 + 30))
+        else:
+            screen.blit(white_images[index], (white_locations[i][0] * 100 + 10, white_locations[i][1] * 100 + 10))
+        if turn_step < 2:
+            if selection == i:
+                pygame.draw.rect(screen, "red", (white_locations[i][0] * 100 + 1, white_locations[i][1] * 100 + 1, 100, 100), 3)
+    
+    for i in range(len(black_pieces)):
+        index = piece_list.index(black_pieces[i])
+        if black_pieces[i] == 'pawn':
+            screen.blit(black_pawn, (black_locations[i][0] * 100 + 22, black_locations[i][1] * 100 + 30))
+        else:
+            screen.blit(black_images[index], (black_locations[i][0] * 100 + 10, black_locations[i][1] * 100 + 10))
+        if turn_step >= 2:
+            if selection == i:
+                pygame.draw.rect(screen, "blue", (black_locations[i][0] * 100 + 1, black_locations[i][1] * 100 + 1, 100, 100), 3)
+
+# função para verificar todas as opções válidas de peças no tabuleiro
+def check_options(pieces, locations, turn):
+    # variáveis locais
+    moves_list = []
+    all_moves_list = []
+
+    for i in range(len(pieces)):
+        locations = locations[i]
+        piece = pieces[i]
+        if piece == 'pawn':
+            moves_list = check_pawn(locations, turn)
+        elif piece == 'rook':
+            moves_list = check_rook(locations, turn)
+        elif piece == 'knight':
+            moves_list = check_knight(locations, turn)
+        elif piece == 'bishop':
+            moves_list = check_bishop(locations, turn)
+        elif piece == 'queen':
+            moves_list = check_queen(locations, turn)
+        elif piece == 'king':
+            moves_list = check_king(locations, turn)
+        all_moves_list.append(moves_list)
+
+    return all_moves_list
+
+# verifique movimentos de peão válidos
+def check_pawn(position, color):
+    moves_list = []
+
+    if color == "white":
+        if (position[0], position[1] + 1) not in white_locations and (position[0], position[1] + 1) not in black_locations and position[1] < 7:
+            moves_list.append((position[0], position[1] + 1))
+        if (position[0], position[1] + 2) not in white_locations and (position[0], position[1] + 2) not in black_locations and position[1] == 1:
+            moves_list.append((position[0], position[1] + 2))
+
+# main game loop
+black_options = check_options(black_pieces, black_locations, "black")
+white_options = check_options(white_pieces, white_locations, "white")
+
 running = True
 while running:
     timer.tick(fps)
     screen.fill("dark gray")
     draw_board()
+    draw_pieces()
 
     # eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        
+        # verifica se o mouse foi clicado
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            x_coord = event.pos[0] // 100
+            y_coord = event.pos[1] // 100
+            click_coord = (x_coord, y_coord)
+            if turn_step <= 1:
+                if click_coord in white_locations:
+                    selection = white_locations.index(click_coord)
+                    if turn_step == 0:
+                        turn_step = 1
+                if click_coord in valid_moves and selection != 100:
+                    white_locations[selection] = click_coord
+                    if click_coord in black_locations:
+                        black_piece = black_locations.index(click_coord)
+                        captured_pieces_white.append(black_pieces[black_piece])
+                        black_pieces.pop(black_piece)
+                        black_locations.pop(black_piece)
+                    black_options = check_options(black_pieces, black_locations, "black")
+                    white_options = check_options(white_pieces, white_locations, "white")
+                    turn_step = 2
+                    selection = 100
+                    valid_moves = []
+            if turn_step > 1:
+                if click_coord in black_locations:
+                    selection = black_locations.index(click_coord)
+                    if turn_step == 2:
+                        turn_step = 3
+                if click_coord in valid_moves and selection != 100:
+                    black_locations[selection] = click_coord
+                    if click_coord in white_locations:
+                        white_piece = white_locations.index(click_coord)
+                        captured_pieces_black.append(white_pieces[white_piece])
+                        white_pieces.pop(white_piece)
+                        white_locations.pop(white_piece)
+                    black_options = check_options(black_pieces, black_locations, "black")
+                    white_options = check_options(white_pieces, white_locations, "white")
+                    turn_step = 0
+                    selection = 100
+                    valid_moves = []
 
     # atualizações
     pygame.display.flip()
