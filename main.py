@@ -155,12 +155,12 @@ def check_options(pieces, locations, turn):
             moves_list = check_rook(location, turn)
         elif piece == 'knight':
             moves_list = check_knight(location, turn)
-        '''elif piece == 'bishop':
+        elif piece == 'bishop':
             moves_list = check_bishop(location, turn)
         elif piece == 'queen':
             moves_list = check_queen(location, turn)
         elif piece == 'king':
-            moves_list = check_king(location, turn)'''
+            moves_list = check_king(location, turn)
         all_moves_list.append(moves_list)
     return all_moves_list
 
@@ -226,21 +226,78 @@ def check_rook(position, color):
 # verifique movimentos de cavalo válidos
 def check_knight(position, color):
     moves_list = []
+    if color == 'white':
+        enemies_list = black_locations
+        friends_list = white_locations
+    else:
+        friends_list = black_locations
+        enemies_list = white_locations
+    # 8 casas para verificar se há reis, eles podem ir uma casa em qualquer direção
+    targets = [(1, 2), (1, -2), (2, 1), (2, -1), (-1, 2), (-1, -2), (-2, 1), (-2, -1)]
+    for i in range(8):
+        target = (position[0] + targets[i][0], position[1] + targets[i][1])
+        if target not in friends_list and 0 <= target[0] <= 7 and 0 <= target[1] <= 7:
+            moves_list.append(target)
     return moves_list
 
 # verifique movimentos de bispo válidos
 def check_bishop(position, color):
     moves_list = []
+    if color == 'white':
+        enemies_list = black_locations
+        friends_list = white_locations
+    else:
+        friends_list = black_locations
+        enemies_list = white_locations
+    for i in range(4):  # para cima à direita, para cima à esquerda, para baixo à direita, para baixo à esquerda
+        path = True
+        chain = 1
+        if i == 0:
+            x = 1
+            y = -1
+        elif i == 1:
+            x = -1
+            y = -1
+        elif i == 2:
+            x = 1
+            y = 1
+        else:
+            x = -1
+            y = 1
+        while path:
+            if (position[0] + (chain * x), position[1] + (chain * y)) not in friends_list and \
+                    0 <= position[0] + (chain * x) <= 7 and 0 <= position[1] + (chain * y) <= 7:
+                moves_list.append((position[0] + (chain * x), position[1] + (chain * y)))
+                if (position[0] + (chain * x), position[1] + (chain * y)) in enemies_list:
+                    path = False
+                chain += 1
+            else:
+                path = False
     return moves_list
 
 # verifique movimentos de rainha válidos
 def check_queen(position, color):
-    moves_list = []
+    moves_list = check_bishop(position, color)
+    second_list = check_rook(position, color)
+    for i in range(len(second_list)):
+        moves_list.append(second_list[i])
     return moves_list
 
 # verifique movimentos de rei válidos
 def check_king(position, color):
     moves_list = []
+    if color == 'white':
+        enemies_list = black_locations
+        friends_list = white_locations
+    else:
+        friends_list = black_locations
+        enemies_list = white_locations
+    # 8 casas para verificar se há reis, eles podem ir uma casa em qualquer direção
+    targets = [(1, 0), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1), (0, 1), (0, -1)]
+    for i in range(8):
+        target = (position[0] + targets[i][0], position[1] + targets[i][1])
+        if target not in friends_list and 0 <= target[0] <= 7 and 0 <= target[1] <= 7:
+            moves_list.append(target)
     return moves_list
 
 # verifique se há movimentos válidos para a peça apenas selecionada
