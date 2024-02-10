@@ -5,7 +5,7 @@ pygame.init()
 
 # variáveis globais
 WIDTH = 1000
-HEIGHT = 780
+HEIGHT = 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Jogo de Xadrez - Silvanei Martins")
 font = pygame.font.Font("poppins-bold.ttf", 20)
@@ -87,11 +87,27 @@ small_black_images = [black_pawn_small, black_queen_small, black_king_small, bla
 # lista de peças
 piece_list = ['pawn', 'queen', 'king', 'knight', 'rook', 'bishop']
 
+# verificar variáveis / contador intermitente
+
+
+# função para desenhar o tabuleiro
+def draw_board():
+    for i in range(32):
+        column = i % 4
+        row = i // 4
+
+        # desenha os quadrados do tabuleiro
+        if row % 2 == 0:
+          pygame.draw.rect(screen, "light gray", [600 - (column * 200), row * 100, 100, 100])
+        else:
+          pygame.draw.rect(screen, "light gray", [700 - (column * 200), row * 100, 100, 100])
+
 # game loop
 running = True
 while running:
     timer.tick(fps)
     screen.fill("dark gray")
+    draw_board()
 
     # eventos
     for event in pygame.event.get():
