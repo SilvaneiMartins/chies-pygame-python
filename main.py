@@ -104,7 +104,7 @@ def draw_board():
             pygame.draw.rect(screen, "light gray", [700 - (column * 200), row * 100, 100, 100])
         pygame.draw.rect(screen, "gray", [800, 600, 400, 200])
         pygame.draw.rect(screen, "dark gray", [800, 600, 400, 200])
-        pygame.draw.rect(screen, "gray", [800, 0, 400, 600])
+        pygame.draw.rect(screen, "gray", [800, 0, 400, 700])
 
         # lista de texto do status
         status_text = [
@@ -115,7 +115,7 @@ def draw_board():
         ]
 
         # desenha o texto do status
-        screen.blit(small_font.render(status_text[turn_step], True, "#202021"), (810, 610))
+        screen.blit(small_font.render(status_text[turn_step], True, "#202021"), (820, 730))
         for i in range(9):
             pygame.draw.line(screen, "black", (100 * i, 0), (100 * i, 800))
             pygame.draw.line(screen, "black", (0, 100 * i), (800, 100 * i))
@@ -144,16 +144,14 @@ def draw_pieces():
 
 # função para verificar todas as opções válidas de peças no tabuleiro
 def check_options(pieces, locations, turn):
-    # variáveis locais
     moves_list = []
     all_moves_list = []
-
-    for i in range(len(pieces)):
-        locations = locations[i]
+    for i in range((len(pieces))):
+        location = locations[i]
         piece = pieces[i]
         if piece == 'pawn':
-            moves_list = check_pawn(locations, turn)
-        elif piece == 'rook':
+            moves_list = check_pawn(location, turn)
+        '''elif piece == 'rook':
             moves_list = check_rook(locations, turn)
         elif piece == 'knight':
             moves_list = check_knight(locations, turn)
@@ -162,9 +160,8 @@ def check_options(pieces, locations, turn):
         elif piece == 'queen':
             moves_list = check_queen(locations, turn)
         elif piece == 'king':
-            moves_list = check_king(locations, turn)
+            moves_list = check_king(locations, turn)'''
         all_moves_list.append(moves_list)
-
     return all_moves_list
 
 # verifique movimentos de peão válidos
@@ -176,6 +173,39 @@ def check_pawn(position, color):
             moves_list.append((position[0], position[1] + 1))
         if (position[0], position[1] + 2) not in white_locations and (position[0], position[1] + 2) not in black_locations and position[1] == 1:
             moves_list.append((position[0], position[1] + 2))
+        if (position[0] + 1, position[1] + 1) in black_locations:
+            moves_list.append((position[0] + 1, position[1] + 1))
+        if (position[0] - 1, position[1] + 1) in black_locations:
+            moves_list.append((position[0] - 1, position[1] + 1))
+    else:
+        if (position[0], position[1] - 1) not in white_locations and (position[0], position[1] - 1) not in black_locations and position[1] > 0:
+            moves_list.append((position[0], position[1] - 1))
+        if (position[0], position[1] - 2) not in white_locations and (position[0], position[1] - 2) not in black_locations and position[1] == 6:
+            moves_list.append((position[0], position[1] - 2))
+        if (position[0] + 1, position[1] - 1) in white_locations:
+            moves_list.append((position[0] + 1, position[1] - 1))
+        if (position[0] - 1, position[1] - 1) in white_locations:
+            moves_list.append((position[0] - 1, position[1] - 1))
+
+    return moves_list
+
+# verifique se há movimentos válidos para a peça apenas selecionada
+def check_valid_moves():
+    if turn_step < 2:
+        options_list = white_options
+    else:
+        options_list = black_options
+    valid_options = options_list[selection]
+    return valid_options
+
+# desenhe movimentos válidos na tela
+def draw_valid(moves):
+    if turn_step < 2:
+        color = 'red'
+    else:
+        color = 'blue'
+    for i in range(len(moves)):
+        pygame.draw.circle(screen, color, (moves[i][0] * 100 + 50, moves[i][1] * 100 + 50), 5)
 
 # main game loop
 black_options = check_options(black_pieces, black_locations, "black")
@@ -187,6 +217,10 @@ while running:
     screen.fill("dark gray")
     draw_board()
     draw_pieces()
+
+    if selection != 100:
+        valid_moves = check_valid_moves()
+        draw_valid(valid_moves)
 
     # eventos
     for event in pygame.event.get():
