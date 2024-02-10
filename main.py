@@ -89,7 +89,7 @@ small_black_images = [black_pawn_small, black_queen_small, black_king_small, bla
 piece_list = ['pawn', 'queen', 'king', 'knight', 'rook', 'bishop']
 
 # verificar variáveis / contador intermitente
-
+counter = 0
 
 # função para desenhar o tabuleiro
 def draw_board():
@@ -120,6 +120,7 @@ def draw_board():
             pygame.draw.line(screen, "black", (100 * i, 0), (100 * i, 800))
             pygame.draw.line(screen, "black", (0, 100 * i), (800, 100 * i))
 
+
 # função para desenhar as peças no tabuleiro
 def draw_pieces():
     for i in range(len(white_pieces)):
@@ -142,6 +143,7 @@ def draw_pieces():
             if selection == i:
                 pygame.draw.rect(screen, "blue", (black_locations[i][0] * 100 + 1, black_locations[i][1] * 100 + 1, 100, 100), 3)
 
+
 # função para verificar todas as opções válidas de peças no tabuleiro
 def check_options(pieces, locations, turn):
     moves_list = []
@@ -163,6 +165,7 @@ def check_options(pieces, locations, turn):
             moves_list = check_king(location, turn)
         all_moves_list.append(moves_list)
     return all_moves_list
+
 
 # verifique movimentos de peão válidos
 def check_pawn(position, color):
@@ -188,6 +191,7 @@ def check_pawn(position, color):
             moves_list.append((position[0] - 1, position[1] - 1))
 
     return moves_list
+
 
 # verifique movimentos de torre válidos
 def check_rook(position, color):
@@ -223,6 +227,7 @@ def check_rook(position, color):
                 path = False
     return moves_list
 
+
 # verifique movimentos de cavalo válidos
 def check_knight(position, color):
     moves_list = []
@@ -240,6 +245,7 @@ def check_knight(position, color):
             moves_list.append(target)
     return moves_list
 
+
 # verifique movimentos de bispo válidos
 def check_bishop(position, color):
     moves_list = []
@@ -249,7 +255,8 @@ def check_bishop(position, color):
     else:
         friends_list = black_locations
         enemies_list = white_locations
-    for i in range(4):  # para cima à direita, para cima à esquerda, para baixo à direita, para baixo à esquerda
+    # para cima à direita, para cima à esquerda, para baixo à direita, para baixo à esquerda
+    for i in range(4):
         path = True
         chain = 1
         if i == 0:
@@ -275,6 +282,7 @@ def check_bishop(position, color):
                 path = False
     return moves_list
 
+
 # verifique movimentos de rainha válidos
 def check_queen(position, color):
     moves_list = check_bishop(position, color)
@@ -282,6 +290,7 @@ def check_queen(position, color):
     for i in range(len(second_list)):
         moves_list.append(second_list[i])
     return moves_list
+
 
 # verifique movimentos de rei válidos
 def check_king(position, color):
@@ -300,6 +309,7 @@ def check_king(position, color):
             moves_list.append(target)
     return moves_list
 
+
 # verifique se há movimentos válidos para a peça apenas selecionada
 def check_valid_moves():
     if turn_step < 2:
@@ -308,6 +318,7 @@ def check_valid_moves():
         options_list = black_options
     valid_options = options_list[selection]
     return valid_options
+
 
 # desenhe movimentos válidos na tela
 def draw_valid(moves):
@@ -318,6 +329,39 @@ def draw_valid(moves):
     for i in range(len(moves)):
         pygame.draw.circle(screen, color, (moves[i][0] * 100 + 50, moves[i][1] * 100 + 50), 5)
 
+
+# desenhe peças capturadas na lateral da tela
+def draw_captured():
+    for i in range(len(captured_pieces_white)):
+        captured_piece = captured_pieces_white[i]
+        index = piece_list.index(captured_piece)
+        screen.blit(small_white_images[index], (850, 5 + 50 * i))
+    for i in range(len(captured_pieces_black)):
+        captured_piece = captured_pieces_black[i]
+        index = piece_list.index(captured_piece)
+        screen.blit(small_black_images[index], (950, 5 + 50 * i))
+
+
+# desenhe um quadrado piscando ao redor do rei se estiver em xeque
+def draw_check():
+    if turn_step < 2:
+        if 'king' in white_pieces:
+            king_index = white_pieces.index('king')
+            king_location = white_locations[king_index]
+            for i in range(len(black_options)):
+                if king_location in black_options[i]:
+                    if counter < 15:
+                        pygame.draw.rect(screen, "dark red", [white_locations[king_index][0] * 100 + 1, white_locations[king_index][1] * 100 + 1, 100, 100], 3)
+    else:
+        if 'king' in black_pieces:
+            king_index = black_pieces.index('king')
+            king_location = black_locations[king_index]
+            for i in range(len(white_options)):
+                if king_location in white_options[i]:
+                    if counter < 15:
+                        pygame.draw.rect(screen, "dark blue", [black_locations[king_index][0] * 100 + 1, black_locations[king_index][1] * 100 + 1, 100, 100], 3)
+
+
 # main game loop
 black_options = check_options(black_pieces, black_locations, "black")
 white_options = check_options(white_pieces, white_locations, "white")
@@ -325,9 +369,15 @@ white_options = check_options(white_pieces, white_locations, "white")
 running = True
 while running:
     timer.tick(fps)
+    if counter < 30:
+        counter += 1
+    else:
+        counter = 0
     screen.fill("dark gray")
     draw_board()
     draw_pieces()
+    draw_captured()
+    draw_check()
 
     if selection != 100:
         valid_moves = check_valid_moves()
