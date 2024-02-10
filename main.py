@@ -126,6 +126,7 @@ def draw_board():
         for i in range(9):
             pygame.draw.line(screen, "black", (100 * i, 0), (100 * i, 800))
             pygame.draw.line(screen, "black", (0, 100 * i), (800, 100 * i))
+        screen.blit(small_font.render("PERDIDO", True, "#202021"), (1100, 3))
 
 
 # função para desenhar as peças no tabuleiro
@@ -422,6 +423,8 @@ while running:
             y_coord = event.pos[1] // 100
             click_coord = (x_coord, y_coord)
             if turn_step <= 1:
+                if click_coord == (8, 8) or click_coord == (9, 8):
+                    winner = "Preto"
                 if click_coord in white_locations:
                     selection = white_locations.index(click_coord)
                     if turn_step == 0:
@@ -443,6 +446,8 @@ while running:
                     selection = 100
                     valid_moves = []
             if turn_step > 1:
+                if click_coord == (8, 8) or click_coord == (9, 8):
+                    winner = "Branco"
                 if click_coord in black_locations:
                     selection = black_locations.index(click_coord)
                     if turn_step == 2:
