@@ -151,16 +151,16 @@ def check_options(pieces, locations, turn):
         piece = pieces[i]
         if piece == 'pawn':
             moves_list = check_pawn(location, turn)
-        '''elif piece == 'rook':
-            moves_list = check_rook(locations, turn)
+        elif piece == 'rook':
+            moves_list = check_rook(location, turn)
         elif piece == 'knight':
-            moves_list = check_knight(locations, turn)
-        elif piece == 'bishop':
-            moves_list = check_bishop(locations, turn)
+            moves_list = check_knight(location, turn)
+        '''elif piece == 'bishop':
+            moves_list = check_bishop(location, turn)
         elif piece == 'queen':
-            moves_list = check_queen(locations, turn)
+            moves_list = check_queen(location, turn)
         elif piece == 'king':
-            moves_list = check_king(locations, turn)'''
+            moves_list = check_king(location, turn)'''
         all_moves_list.append(moves_list)
     return all_moves_list
 
@@ -187,6 +187,60 @@ def check_pawn(position, color):
         if (position[0] - 1, position[1] - 1) in white_locations:
             moves_list.append((position[0] - 1, position[1] - 1))
 
+    return moves_list
+
+# verifique movimentos de torre válidos
+def check_rook(position, color):
+    moves_list = []
+    if color == "white":
+        enemies_list = black_locations
+        friends_list = white_locations
+    else:
+        friends_list = black_locations
+        enemies_list = white_locations
+    for i in range(4): # down, up, right, left
+        path = True
+        chain = 1
+        if i == 0:
+            x = 0
+            y = 1
+        elif i == 1:
+            x = 0
+            y = -1
+        elif i == 2:
+            x = 1
+            y = 0
+        else:
+            x = -1
+            y = 0
+        while path:
+            if (position[0] + (chain * x), position[1] + (chain * y)) not in friends_list and 0 <= position[0] + (chain * x) <= 7 and 0 <= position[1] + (chain * y) <= 7:
+                moves_list.append((position[0] + (chain * x), position[1] + (chain * y)))
+                if (position[0] + (chain * x), position[1] + (chain * y)) in enemies_list:
+                    path = False
+                chain += 1
+            else:
+                path = False
+    return moves_list
+
+# verifique movimentos de cavalo válidos
+def check_knight(position, color):
+    moves_list = []
+    return moves_list
+
+# verifique movimentos de bispo válidos
+def check_bishop(position, color):
+    moves_list = []
+    return moves_list
+
+# verifique movimentos de rainha válidos
+def check_queen(position, color):
+    moves_list = []
+    return moves_list
+
+# verifique movimentos de rei válidos
+def check_king(position, color):
+    moves_list = []
     return moves_list
 
 # verifique se há movimentos válidos para a peça apenas selecionada
